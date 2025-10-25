@@ -1,0 +1,5 @@
+{
+  "name": "Sessions",
+  "description": "A minimalist, iOS-styled web application to track global market trading sessions. It features a real-time clock, timezone selector, and a visual timeline of session activity.",
+  "requestFramePermissions": []
+}
