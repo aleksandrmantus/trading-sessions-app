@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { TIMEZONES } from './constants';
 import { type TradingSession, type SessionStatus, type SessionDetails } from './types';
@@ -109,7 +110,7 @@ const App: React.FC = () => {
     return (
         <div className="min-h-screen text-zinc-800 dark:text-zinc-200 p-4 sm:p-6 lg:p-8 font-sans transition-colors duration-300">
             <div className="max-w-xl mx-auto">
-                <main className="space-y-6">
+                <main className="space-y-6 pb-24 sm:pb-0">
                     <div className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xl shadow-black/20 p-6">
                         <Clock time={now} timezone={selectedTimezone} />
                         <div className="mt-6 relative">
@@ -149,8 +150,13 @@ const App: React.FC = () => {
                     </div>
 
                     <div className="flex justify-center">
-                        <button onClick={() => setModalState({ isOpen: true, sessionToEdit: null })} className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 transition-all duration-200">
-                           <PlusIcon className="w-4 h-4" /> Add Session
+                        <button 
+                            onClick={() => setModalState({ isOpen: true, sessionToEdit: null })} 
+                            className="inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+                            aria-label="Add Session"
+                        >
+                            <PlusIcon className="h-4 w-4" />
+                            <span className="text-sm">Add Session</span>
                         </button>
                     </div>
                 </main>

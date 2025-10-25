@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 
 interface ClockProps {
@@ -32,7 +33,7 @@ const Clock: React.FC<ClockProps> = ({ time, timezone }) => {
 
     return (
         <div className="text-center">
-            <h2 className="text-7xl font-light tracking-tight text-zinc-100 font-mono">
+            <h2 className="text-6xl sm:text-7xl font-light tracking-tight text-zinc-100 font-mono">
                 {formattedTime}
             </h2>
             <p className="text-sm text-zinc-400 mt-1">{timezone.replace(/_/g, ' ')} ({timezoneOffset})</p>
