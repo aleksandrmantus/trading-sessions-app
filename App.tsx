@@ -206,7 +206,7 @@ const App: React.FC = () => {
                     {isCompact ? (
                         // --- COMPACT MODE ---
                         // A single "Smart Status Bar" that combines Clock and Controls
-                        <div className="grid grid-cols-[1fr_auto] items-center gap-4 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl shadow-lg shadow-black/5 dark:shadow-xl dark:shadow-black/20 p-2 px-4 transition-all duration-300">
+                        <div className="flex items-center justify-between bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl shadow-lg shadow-black/5 dark:shadow-xl dark:shadow-black/20 p-2 px-4 transition-all duration-300">
                             <Clock
                                 time={now}
                                 timezone={selectedTimezone}
