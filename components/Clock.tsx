@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 
 interface ClockProps {
@@ -31,24 +30,38 @@ const Clock: React.FC<ClockProps> = ({ time, timezone, onTimezoneClick, isCompac
         }).format(time);
     }, [time, timezone, isCompact]);
 
+    const dayString = useMemo(() => {
+        return new Intl.DateTimeFormat('en-US', {
+            weekday: 'short',
+            timeZone: timezone,
+        }).format(time);
+    }, [time, timezone]);
+
     if (isCompact) {
-        // --- COMPACT MODE: FINAL POLISHED VERSION ---
         return (
-            <button 
-                onClick={onTimezoneClick} 
-                className="inline-flex items-baseline gap-2 rounded-lg p-1.5 -ml-1.5 transition-colors duration-150 group hover:bg-zinc-100 dark:hover:bg-zinc-800/60"
-                aria-label={`Current time: ${timeString} in ${timezoneAbbr}. Click to change timezone.`}
-            >
+            <div className="inline-flex items-baseline gap-2.5 rounded-lg p-1.5 -ml-1.5">
                 <h1 className="font-mono text-zinc-900 dark:text-zinc-100 tracking-tight text-2xl font-medium">
                     {timeString}
                 </h1>
-                <span 
-                    className="text-xs font-semibold tracking-wider bg-zinc-200/60 dark:bg-zinc-700/40 text-zinc-600 dark:text-zinc-400 rounded-md px-1.5 py-0.5 transition-colors duration-150 group-hover:bg-zinc-200 dark:group-hover:bg-zinc-700/70"
-                    style={{ transform: 'translateY(-1px)' }} 
+                
+                <button 
+                    onClick={onTimezoneClick}
+                    className="group rounded-md px-1.5 py-0.5 transition-colors duration-150 bg-zinc-200/60 dark:bg-zinc-700/40 hover:bg-zinc-200 dark:hover:bg-zinc-700/70"
+                    style={{ transform: 'translateY(-1px)' }}
+                    aria-label={`Current timezone: ${timezoneAbbr}. Click to change.`}
                 >
-                    {timezoneAbbr}
+                    <span className="text-xs font-semibold tracking-wider text-zinc-600 dark:text-zinc-400">
+                        {timezoneAbbr}
+                    </span>
+                </button>
+
+                <span 
+                    className="text-xs font-semibold tracking-wider text-zinc-500 dark:text-zinc-400/80"
+                    style={{ transform: 'translateY(-1px)' }}
+                >
+                    {dayString}
                 </span>
-            </button>
+            </div>
         );
     }
 
@@ -63,6 +76,13 @@ const Clock: React.FC<ClockProps> = ({ time, timezone, onTimezoneClick, isCompac
         }
     }, [timezone]);
     
+    const fullDayString = useMemo(() => {
+        return new Intl.DateTimeFormat('en-US', {
+            weekday: 'long',
+            timeZone: timezone,
+        }).format(time);
+    }, [time, timezone]);
+
     return (
         <div className="text-center">
             <h1 className="font-mono text-zinc-900 dark:text-zinc-100 tracking-tight text-6xl lg:text-7xl font-light">
@@ -71,9 +91,9 @@ const Clock: React.FC<ClockProps> = ({ time, timezone, onTimezoneClick, isCompac
             <button 
                 onClick={onTimezoneClick}
                 className="w-full rounded-md text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors py-1 text-sm mt-1 font-mono"
-                aria-label={`Current timezone: ${timezoneDisplay}. Click to change.`}
+                aria-label={`Current day: ${fullDayString}. Current timezone: ${timezoneDisplay}. Click to change.`}
             >
-                {timezoneDisplay} ({timezoneAbbr})
+                {fullDayString} &middot; {timezoneDisplay} ({timezoneAbbr})
             </button>
         </div>
     );
