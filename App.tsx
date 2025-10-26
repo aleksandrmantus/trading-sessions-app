@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { TIMEZONES } from './constants';
 import { type TradingSession, type SessionStatus, type SessionDetails } from './types';
@@ -8,7 +7,7 @@ import Clock from './components/Clock';
 import { PlusIcon, GitHubIcon, EnvelopeIcon } from './components/Icons';
 import { useSessions, useLocalStorage } from './hooks';
 import SessionModal from './components/SessionModal';
-import ControlDeck from './components/ControlDeck';
+import ControlDeck, { type TradingSchedule } from './components/ControlDeck';
 import TimezoneModal from './components/TimezoneModal';
 
 function formatCountdown(ms: number): string {
@@ -80,6 +79,8 @@ const App: React.FC = () => {
     const [showGoldenHours, setShowGoldenHours] = useLocalStorage<boolean>('market-sessions-golden-hours', true);
     const [showMarketPulse, setShowMarketPulse] = useLocalStorage<boolean>('market-sessions-market-pulse', true);
     const [tooltip, setTooltip] = useState<TooltipData | null>(null);
+    const [tradingSchedule, setTradingSchedule] = useLocalStorage<TradingSchedule>('market-sessions-trading-schedule', 'weekdays');
+
 
     useEffect(() => {
         const root = window.document.documentElement;
@@ -101,6 +102,13 @@ const App: React.FC = () => {
 
     const sessionDetails: SessionDetails[] = useMemo(() => {
         const localDate = new Date(now.toLocaleString('en-US', { timeZone: selectedTimezone }));
+        const dayOfWeek = localDate.getDay(); // 0 = Sunday, 6 = Saturday
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+        if (tradingSchedule === 'weekdays' && isWeekend) {
+            return [];
+        }
+
         const nowInMinutes = localDate.getHours() * 60 + localDate.getMinutes();
 
         const overlaps = new Array(24 * 60).fill(0);
@@ -172,7 +180,7 @@ const App: React.FC = () => {
                 isOverlapping: isOverlappingNow,
             };
         });
-    }, [now, selectedTimezone, sessions]);
+    }, [now, selectedTimezone, sessions, tradingSchedule]);
 
     const handleSaveSession = (sessionData: TradingSession | Omit<TradingSession, 'id'>) => {
         if ('id' in sessionData) {
@@ -223,6 +231,8 @@ const App: React.FC = () => {
                                 onGoldenHoursToggle={() => setShowGoldenHours(!showGoldenHours)}
                                 showMarketPulse={showMarketPulse}
                                 onMarketPulseToggle={() => setShowMarketPulse(!showMarketPulse)}
+                                tradingSchedule={tradingSchedule}
+                                onTradingScheduleChange={setTradingSchedule}
                             />
                         </div>
                     ) : (
@@ -239,6 +249,8 @@ const App: React.FC = () => {
                                 onGoldenHoursToggle={() => setShowGoldenHours(!showGoldenHours)}
                                 showMarketPulse={showMarketPulse}
                                 onMarketPulseToggle={() => setShowMarketPulse(!showMarketPulse)}
+                                tradingSchedule={tradingSchedule}
+                                onTradingScheduleChange={setTradingSchedule}
                             />
                             <div className="bg-white dark:bg-zinc-900 shadow-md dark:shadow-lg shadow-black/5 dark:shadow-black/20 rounded-xl p-6 transition-colors border border-zinc-200/80 dark:border-zinc-800">
                                 <Clock
@@ -251,32 +263,44 @@ const App: React.FC = () => {
                         </>
                     )}
 
-                    <div className={`bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl shadow-lg shadow-black/5 dark:shadow-xl dark:shadow-black/20 ${isCompact ? 'p-3' : 'p-4 sm:p-6'}`}>
-                        <Timeline 
-                            sessions={sessions}
-                            sessionDetails={sessionDetails} 
-                            now={now} 
-                            timezone={selectedTimezone} 
-                            isCompact={isCompact}
-                            showGoldenHours={showGoldenHours}
-                            showMarketPulse={showMarketPulse}
-                            tooltip={tooltip}
-                            onSetTooltip={handleSetTooltip}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        {sessionDetails.map((session, index) => (
-                           <SessionCard
-                                key={session.id}
-                                session={session}
-                                onEdit={() => handleEdit(session)}
-                                onDelete={() => handleDelete(session.id)}
+                    {sessionDetails.length > 0 && (
+                        <div className={`bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl shadow-lg shadow-black/5 dark:shadow-xl dark:shadow-black/20 ${isCompact ? 'p-3' : 'p-4 sm:p-6'}`}>
+                            <Timeline 
+                                sessions={sessions}
+                                sessionDetails={sessionDetails} 
+                                now={now} 
+                                timezone={selectedTimezone} 
                                 isCompact={isCompact}
                                 showGoldenHours={showGoldenHours}
-                                style={{ animationDelay: `${index * 50}ms`, opacity: 0 }}
-                           />
-                        ))}
+                                showMarketPulse={showMarketPulse}
+                                tooltip={tooltip}
+                                onSetTooltip={handleSetTooltip}
+                            />
+                        </div>
+                    )}
+                    
+
+                    <div className="space-y-2">
+                        {sessionDetails.length > 0 ? (
+                            sessionDetails.map((session, index) => (
+                               <SessionCard
+                                    key={session.id}
+                                    session={session}
+                                    onEdit={() => handleEdit(session)}
+                                    onDelete={() => handleDelete(session.id)}
+                                    isCompact={isCompact}
+                                    showGoldenHours={showGoldenHours}
+                                    style={{ animationDelay: `${index * 50}ms`, opacity: 0 }}
+                               />
+                            ))
+                        ) : (
+                            <div className="text-center py-10 px-4 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl shadow-lg shadow-black/5 dark:shadow-xl dark:shadow-black/20">
+                                <h3 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">Markets are currently closed.</h3>
+                                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+                                    Trading sessions are hidden based on your "Weekdays Only" schedule.
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex justify-center pt-2">
