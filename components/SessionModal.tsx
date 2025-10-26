@@ -15,10 +15,16 @@ interface SessionModalProps {
 const SessionModal: React.FC<SessionModalProps> = ({ isOpen, onClose, onSave, session, sessions, localTimezone }) => {
     const [name, setName] = useState('');
     const [market, setMarket] = useState('');
-    const [startHour, setStartHour] = useState(8);
-    const [endHour, setEndHour] = useState(17);
+    const [startHourDisplay, setStartHourDisplay] = useState('8');
+    const [endHourDisplay, setEndHourDisplay] = useState('17');
     const [color, setColor] = useState(SESSION_COLORS[0].class);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    
+    // Derive numeric values from string display state for calculations.
+    // Default to 0 if the string is empty or invalid.
+    const startHour = parseInt(startHourDisplay, 10) || 0;
+    const endHour = parseInt(endHourDisplay, 10) || 0;
+
 
     useEffect(() => {
         if (isOpen) {
@@ -26,14 +32,14 @@ const SessionModal: React.FC<SessionModalProps> = ({ isOpen, onClose, onSave, se
             if (session) {
                 setName(session.name);
                 setMarket(session.market);
-                setStartHour(session.utcStartHour);
-                setEndHour(session.utcEndHour);
+                setStartHourDisplay(String(session.utcStartHour));
+                setEndHourDisplay(String(session.utcEndHour));
                 setColor(session.color);
             } else {
                 setName('');
                 setMarket('');
-                setStartHour(8);
-                setEndHour(17);
+                setStartHourDisplay('8');
+                setEndHourDisplay('17');
                 setColor(SESSION_COLORS[0].class);
             }
             setErrors({});
@@ -83,7 +89,12 @@ const SessionModal: React.FC<SessionModalProps> = ({ isOpen, onClose, onSave, se
         const newErrors: { [key: string]: string } = {};
         if (!name.trim()) newErrors.name = 'Session name cannot be empty.';
         if (!market.trim()) newErrors.market = 'Market/Region cannot be empty.';
-        if (startHour === endHour) newErrors.time = 'Start and end time cannot be the same.';
+        
+        if (startHourDisplay.trim() === '' || endHourDisplay.trim() === '') {
+            newErrors.time = 'Time cannot be empty.';
+        } else if (startHour === endHour) {
+            newErrors.time = 'Start and end time cannot be the same.';
+        }
 
         const isDuplicate = sessions.some(s => s.name.trim().toLowerCase() === name.trim().toLowerCase() && s.id !== session?.id);
         if (isDuplicate) newErrors.name = 'A session with this name already exists.';
@@ -92,22 +103,39 @@ const SessionModal: React.FC<SessionModalProps> = ({ isOpen, onClose, onSave, se
         return Object.keys(newErrors).length === 0;
     };
     
-    const handleTimeInputChange = (value: string, setter: React.Dispatch<React.SetStateAction<number>>) => {
+    const handleTimeInputChange = (value: string, setter: React.Dispatch<React.SetStateAction<string>>) => {
+        // Allow the input to be empty
         if (value === '') {
-            setter(0);
+            setter('');
             return;
         }
-        const num = parseInt(value, 10);
-        if (!isNaN(num)) {
-            if (num > 23) {
-                setter(23);
-            } else if (num < 0) {
-                setter(0);
-            } else {
-                setter(num);
-            }
+
+        // Only allow numeric input
+        const numericValue = value.replace(/[^0-9]/g, '');
+        if (numericValue === '') {
+            setter('');
+            return;
+        }
+
+        const num = parseInt(numericValue, 10);
+        
+        if (num > 23) {
+            setter('23');
+        } else if (num < 0) {
+            setter('0');
+        } else {
+            // Set the value as a string. This correctly handles leading zeros,
+            // e.g., if user types '7' when '0' is present, the value becomes '07',
+            // which parseInt converts to 7, and we set the state to '7'.
+            setter(String(num));
         }
     };
+
+    const handleTimeInputBlur = (setter: React.Dispatch<React.SetStateAction<string>>) => {
+        // If the user leaves the input empty, default it to '0' for valid calculations.
+        setter(currentValue => (currentValue.trim() === '' ? '0' : currentValue));
+    };
+
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -158,15 +186,17 @@ const SessionModal: React.FC<SessionModalProps> = ({ isOpen, onClose, onSave, se
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label htmlFor="start-time" className="text-xs text-zinc-500">Start Time</label>
-                                        <input type="number" id="start-time" value={startHour} 
-                                            onChange={e => handleTimeInputChange(e.target.value, setStartHour)}
+                                        <input type="number" id="start-time" value={startHourDisplay} 
+                                            onChange={e => handleTimeInputChange(e.target.value, setStartHourDisplay)}
+                                            onBlur={() => handleTimeInputBlur(setStartHourDisplay)}
                                             className="mt-1 w-full rounded-lg bg-zinc-700/50 border-zinc-600 px-3 py-2 text-center text-white focus:border-zinc-500 focus:ring-1 focus:ring-white/50" 
                                         />
                                     </div>
                                     <div>
                                         <label htmlFor="end-time" className="text-xs text-zinc-500">End Time</label>
-                                        <input type="number" id="end-time" value={endHour} 
-                                            onChange={e => handleTimeInputChange(e.target.value, setEndHour)}
+                                        <input type="number" id="end-time" value={endHourDisplay} 
+                                            onChange={e => handleTimeInputChange(e.target.value, setEndHourDisplay)}
+                                            onBlur={() => handleTimeInputBlur(setEndHourDisplay)}
                                             className="mt-1 w-full rounded-lg bg-zinc-700/50 border-zinc-600 px-3 py-2 text-center text-white focus:border-zinc-500 focus:ring-1 focus:ring-white/50"
                                         />
                                     </div>
