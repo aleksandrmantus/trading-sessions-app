@@ -154,14 +154,14 @@ const SessionModal: React.FC<SessionModalProps> = ({ isOpen, onClose, onSave, se
             onClick={onClose}
         >
             <div
-                className="bg-zinc-800/95 border border-zinc-700 w-full max-w-md rounded-2xl shadow-2xl shadow-black/30 flex flex-col"
+                className="bg-white dark:bg-zinc-800/95 border border-zinc-200 dark:border-zinc-700 w-full max-w-md rounded-2xl shadow-xl shadow-black/5 dark:shadow-2xl dark:shadow-black/30 flex flex-col"
                 onClick={e => e.stopPropagation()}
             >
-                <header className="p-5 border-b border-zinc-700 flex items-center justify-between flex-shrink-0">
-                    <h2 className="text-lg font-semibold text-white">
+                <header className="p-5 border-b border-zinc-200 dark:border-zinc-700 flex items-center justify-between flex-shrink-0">
+                    <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
                         {session ? 'Edit Session' : 'Add New Session'}
                     </h2>
-                    <button onClick={onClose} className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-700 rounded-full transition-colors" aria-label="Close modal">
+                    <button onClick={onClose} className="p-1.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-full transition-colors" aria-label="Close modal">
                         <XMarkIcon className="w-5 h-5" />
                     </button>
                 </header>
@@ -170,26 +170,26 @@ const SessionModal: React.FC<SessionModalProps> = ({ isOpen, onClose, onSave, se
                     <form onSubmit={handleSubmit}>
                         <div className="space-y-5">
                             <div>
-                                <label htmlFor="name" className="block text-xs font-medium text-zinc-400">Session Name</label>
-                                <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} className={`mt-1 block w-full rounded-lg bg-zinc-700/50 border-zinc-600 px-3 py-2 text-white placeholder-zinc-400 focus:border-zinc-500 focus:ring-1 focus:ring-white/50 ${errors.name ? 'border-red-500/50 ring-1 ring-red-500/50' : ''}`} placeholder="e.g., London"/>
-                                {errors.name && <p className="mt-1.5 text-xs text-red-400 text-center">{errors.name}</p>}
+                                <label htmlFor="name" className="block text-xs font-medium text-zinc-500 dark:text-zinc-400">Session Name</label>
+                                <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} className={`mt-1 block w-full rounded-lg bg-zinc-100 dark:bg-zinc-700/50 border-zinc-300 dark:border-zinc-600 px-3 py-2 text-zinc-900 dark:text-white placeholder-zinc-500 dark:placeholder-zinc-400 focus:border-blue-500 dark:focus:border-zinc-500 focus:ring-1 focus:ring-blue-500/40 dark:focus:ring-white/50 ${errors.name ? 'border-red-500/50 ring-1 ring-red-500/50' : ''}`} placeholder="e.g., London"/>
+                                {errors.name && <p className="mt-1.5 text-xs text-red-500 dark:text-red-400 text-center">{errors.name}</p>}
                             </div>
 
                             <div>
-                                <label htmlFor="market" className="block text-xs font-medium text-zinc-400">Market / Region</label>
-                                <input id="market" type="text" value={market} onChange={(e) => setMarket(e.target.value)} className={`mt-1 block w-full rounded-lg bg-zinc-700/50 border-zinc-600 px-3 py-2 text-white placeholder-zinc-400 focus:border-zinc-500 focus:ring-1 focus:ring-white/50 ${errors.market ? 'border-red-500/50 ring-1 ring-red-500/50' : ''}`} placeholder="e.g., Europe"/>
-                                {errors.market && <p className="mt-1.5 text-xs text-red-400 text-center">{errors.market}</p>}
+                                <label htmlFor="market" className="block text-xs font-medium text-zinc-500 dark:text-zinc-400">Market / Region</label>
+                                <input id="market" type="text" value={market} onChange={(e) => setMarket(e.target.value)} className={`mt-1 block w-full rounded-lg bg-zinc-100 dark:bg-zinc-700/50 border-zinc-300 dark:border-zinc-600 px-3 py-2 text-zinc-900 dark:text-white placeholder-zinc-500 dark:placeholder-zinc-400 focus:border-blue-500 dark:focus:border-zinc-500 focus:ring-1 focus:ring-blue-500/40 dark:focus:ring-white/50 ${errors.market ? 'border-red-500/50 ring-1 ring-red-500/50' : ''}`} placeholder="e.g., Europe"/>
+                                {errors.market && <p className="mt-1.5 text-xs text-red-500 dark:text-red-400 text-center">{errors.market}</p>}
                             </div>
 
                             <div>
-                                <label className="block text-xs font-medium text-zinc-400 mb-2">Session Time (UTC)</label>
+                                <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-2">Session Time (UTC)</label>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label htmlFor="start-time" className="text-xs text-zinc-500">Start Time</label>
                                         <input type="number" id="start-time" value={startHourDisplay} 
                                             onChange={e => handleTimeInputChange(e.target.value, setStartHourDisplay)}
                                             onBlur={() => handleTimeInputBlur(setStartHourDisplay)}
-                                            className="mt-1 w-full rounded-lg bg-zinc-700/50 border-zinc-600 px-3 py-2 text-center text-white focus:border-zinc-500 focus:ring-1 focus:ring-white/50" 
+                                            className="mt-1 w-full rounded-lg bg-zinc-100 dark:bg-zinc-700/50 border-zinc-300 dark:border-zinc-600 px-3 py-2 text-center text-zinc-900 dark:text-white focus:border-blue-500 dark:focus:border-zinc-500 focus:ring-1 focus:ring-blue-500/40 dark:focus:ring-white/50" 
                                         />
                                     </div>
                                     <div>
@@ -197,12 +197,12 @@ const SessionModal: React.FC<SessionModalProps> = ({ isOpen, onClose, onSave, se
                                         <input type="number" id="end-time" value={endHourDisplay} 
                                             onChange={e => handleTimeInputChange(e.target.value, setEndHourDisplay)}
                                             onBlur={() => handleTimeInputBlur(setEndHourDisplay)}
-                                            className="mt-1 w-full rounded-lg bg-zinc-700/50 border-zinc-600 px-3 py-2 text-center text-white focus:border-zinc-500 focus:ring-1 focus:ring-white/50"
+                                            className="mt-1 w-full rounded-lg bg-zinc-100 dark:bg-zinc-700/50 border-zinc-300 dark:border-zinc-600 px-3 py-2 text-center text-zinc-900 dark:text-white focus:border-blue-500 dark:focus:border-zinc-500 focus:ring-1 focus:ring-blue-500/40 dark:focus:ring-white/50"
                                         />
                                     </div>
                                 </div>
-                                <div className="relative h-2 bg-zinc-700 rounded-full mt-3 overflow-hidden">
-                                    <div className="absolute h-full bg-zinc-500 rounded-full" style={{
+                                <div className="relative h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full mt-3 overflow-hidden">
+                                    <div className="absolute h-full bg-zinc-400 dark:bg-zinc-500 rounded-full" style={{
                                         left: `${(Math.max(0, Math.min(23, startHour)) / 24) * 100}%`,
                                         width: `${(((endHour >= startHour ? endHour - startHour : (24 - startHour) + endHour) / 24) * 100)}%`
                                     }}></div>
@@ -212,27 +212,27 @@ const SessionModal: React.FC<SessionModalProps> = ({ isOpen, onClose, onSave, se
                                 </div>
                             </div>
                             
-                            <div className="bg-zinc-700/40 rounded-lg p-3 text-center text-xs space-y-1">
-                                <p className="font-mono text-zinc-300">UTC: {String(startHour).padStart(2, '0')}:00 - {String(endHour).padStart(2, '0')}:00</p>
-                                <p className="font-mono text-zinc-400">Local: {localTimeDisplay}</p>
-                                {errors.time && <p className="text-red-400 font-medium">{errors.time}</p>}
-                                {overlapWarning && !errors.time && <p className="text-amber-400 font-medium">{overlapWarning}</p>}
+                            <div className="bg-zinc-100 dark:bg-zinc-700/40 rounded-lg p-3 text-center text-xs space-y-1">
+                                <p className="font-mono text-zinc-800 dark:text-zinc-300">UTC: {String(startHour).padStart(2, '0')}:00 - {String(endHour).padStart(2, '0')}:00</p>
+                                <p className="font-mono text-zinc-500 dark:text-zinc-400">Local: {localTimeDisplay}</p>
+                                {errors.time && <p className="text-red-500 dark:text-red-400 font-medium">{errors.time}</p>}
+                                {overlapWarning && !errors.time && <p className="text-amber-500 dark:text-amber-400 font-medium">{overlapWarning}</p>}
                             </div>
 
                             <div>
-                                <label className="block text-xs font-medium text-zinc-400">Color</label>
+                                <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400">Color</label>
                                 <div className="mt-2 flex flex-wrap gap-3">
                                     {SESSION_COLORS.map(c => (
-                                        <button type="button" key={c.class} onClick={() => setColor(c.class)} className={`h-7 w-7 rounded-full transition-transform duration-150 ${c.class} ${color === c.class ? 'ring-2 ring-offset-2 ring-white ring-offset-zinc-800' : 'hover:scale-110'}`} aria-label={`Select color ${c.name}`}></button>
+                                        <button type="button" key={c.class} onClick={() => setColor(c.class)} className={`h-7 w-7 rounded-full transition-transform duration-150 ${c.class} ${color === c.class ? 'ring-2 ring-offset-2 ring-white dark:ring-offset-zinc-800' : 'hover:scale-110'}`} aria-label={`Select color ${c.name}`}></button>
                                     ))}
                                 </div>
                             </div>
                         </div>
                         <footer className="pt-6 flex justify-end items-center gap-4">
-                            <button type="button" onClick={onClose} className="text-sm font-medium text-zinc-300 hover:text-white transition-colors">
+                            <button type="button" onClick={onClose} className="text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors">
                                 Cancel
                             </button>
-                            <button type="submit" className="px-5 py-2 text-sm font-semibold text-zinc-800 bg-white rounded-lg hover:bg-zinc-200 active:bg-zinc-300 active:scale-95 transition-all">
+                            <button type="submit" className="px-5 py-2 text-sm font-semibold text-white bg-zinc-900 dark:text-zinc-800 dark:bg-white rounded-lg hover:bg-zinc-700 dark:hover:bg-zinc-200 active:bg-zinc-600 dark:active:bg-zinc-300 active:scale-95 transition-all">
                                 {session ? 'Update Session' : 'Save Session'}
                             </button>
                         </footer>
