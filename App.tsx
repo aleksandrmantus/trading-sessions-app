@@ -403,6 +403,7 @@ const App: React.FC = () => {
                 onClose={() => setSessionModalState({ isOpen: false, sessionToEdit: null })}
                 onSave={handleSaveSession}
                 session={sessionModalState.sessionToEdit}
+                sessions={sessions}
             />
             <TimezoneModal
                 isOpen={timezoneModalOpen}
