@@ -32,14 +32,6 @@ const MenuToggle: React.FC<{isActive?: boolean, onClick: () => void, children: R
     </MenuItem>
 );
 
-const MenuSelector: React.FC<{onClick: () => void, isActive: boolean, children: React.ReactNode}> = ({ onClick, isActive, children }) => (
-    <button onClick={onClick} className="w-full flex items-center justify-between gap-3 whitespace-nowrap px-3 py-2 text-left text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/70 dark:hover:bg-zinc-700/50 rounded-lg transition-colors duration-150">
-        <div className="flex items-center gap-3">{children}</div>
-        {isActive && <CheckIcon className="w-5 h-5 text-blue-500" />}
-    </button>
-);
-
-
 const ControlDeck: React.FC<ControlDeckProps> = ({ 
     theme, onThemeToggle, isCompact, onCompactToggle, onResetSessions, 
     showGoldenHours, onGoldenHoursToggle, showMarketPulse, onMarketPulseToggle,
@@ -92,12 +84,12 @@ const ControlDeck: React.FC<ControlDeckProps> = ({
                         <div className="flex items-center gap-3"><ChevronLeftIcon className="w-5 h-5" /><span>Back</span></div>
                     </MenuItem>
                     <div className="h-px bg-zinc-200 dark:bg-zinc-700/50 my-1"></div>
-                    <MenuSelector isActive={tradingSchedule === 'weekdays'} onClick={() => onTradingScheduleChange('weekdays')}>
-                        <span>Weekdays Only (Mon-Fri)</span>
-                    </MenuSelector>
-                    <MenuSelector isActive={tradingSchedule === '24/7'} onClick={() => onTradingScheduleChange('24/7')}>
-                        <span>24/7 (Includes Weekends)</span>
-                    </MenuSelector>
+                    <MenuToggle isActive={tradingSchedule === 'weekdays'} onClick={() => onTradingScheduleChange('weekdays')}>
+                        <div className="flex items-center gap-3"><span>Weekdays Only (Mon-Fri)</span></div>
+                    </MenuToggle>
+                    <MenuToggle isActive={tradingSchedule === '24/7'} onClick={() => onTradingScheduleChange('24/7')}>
+                        <div className="flex items-center gap-3"><span>24/7 (Includes Weekends)</span></div>
+                    </MenuToggle>
                 </div>
             )}
             {activeSubMenu === null && (
