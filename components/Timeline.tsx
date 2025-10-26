@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState, useRef, useLayoutEffect } from 'react';
 import { type TradingSession, type SessionDetails } from '../types';
 
@@ -198,7 +199,7 @@ const Timeline: React.FC<TimelineProps> = ({ sessions, sessionDetails, now, time
                 )}
             </div>
 
-            <div className="bg-zinc-100 dark:bg-zinc-950/50 rounded-lg p-4">
+            <div className="bg-zinc-100 dark:bg-zinc-950/50 rounded-lg p-2">
                 <div className="relative" style={{ height: `${containerHeight}px` }}>
                     {sessionLevels.map((session) => {
                         const intervals = getLocalIntervals(session, utcOffset);
