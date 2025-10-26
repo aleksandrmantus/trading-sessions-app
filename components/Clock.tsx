@@ -46,7 +46,7 @@ const Clock: React.FC<ClockProps> = ({ time, timezone, onTimezoneClick, isCompac
                 
                 <button 
                     onClick={onTimezoneClick}
-                    className="group rounded-md px-1.5 py-0.5 transition-colors duration-150 bg-zinc-200/60 dark:bg-zinc-700/40 hover:bg-zinc-200 dark:hover:bg-zinc-700/70"
+                    className="group rounded-md px-1.5 transition-colors duration-150 bg-zinc-200/60 dark:bg-zinc-700/40 hover:bg-zinc-200 dark:hover:bg-zinc-700/70"
                     style={{ transform: 'translateY(-1px)' }}
                     aria-label={`Current timezone: ${timezoneAbbr}. Click to change.`}
                 >
