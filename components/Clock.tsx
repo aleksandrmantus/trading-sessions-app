@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { LOCAL_TIMEZONE_DATA } from '../constants';
 
 interface ClockProps {
     time: Date;
@@ -28,15 +29,31 @@ const Clock: React.FC<ClockProps> = ({ time, timezone, onTimezoneClick, isCompac
         }).format(time);
     }, [time, timezone, isLocalTime]);
 
-    const { timezoneDisplay, timezoneAbbr } = useMemo(() => {
-        const tzForFormatting = isLocalTime ? Intl.DateTimeFormat().resolvedOptions().timeZone : timezone;
+    const { displayLabel, compactLabel } = useMemo(() => {
+        if (isLocalTime) {
+            return { 
+                displayLabel: LOCAL_TIMEZONE_DATA.label, 
+                compactLabel: LOCAL_TIMEZONE_DATA.gmt 
+            };
+        }
         try {
-            const parts = new Intl.DateTimeFormat('en-US', { timeZone: tzForFormatting, timeZoneName: 'short' }).formatToParts(time);
-            const abbr = parts.find(part => part.type === 'timeZoneName')?.value || tzForFormatting;
-            const display = tzForFormatting.split('/').pop()?.replace(/_/g, ' ') || tzForFormatting;
-            return { timezoneDisplay: isLocalTime ? 'Local' : display, timezoneAbbr: abbr };
+            const utcDate = new Date(time.toLocaleString('en-US', { timeZone: 'UTC' }));
+            const tzDate = new Date(time.toLocaleString('en-US', { timeZone: timezone }));
+            const offsetInHours = (tzDate.getTime() - utcDate.getTime()) / (3600 * 1000);
+
+            const sign = offsetInHours >= 0 ? '+' : '-';
+            const absHours = Math.abs(offsetInHours);
+            const hours = Math.floor(absHours);
+            const minutes = Math.round((absHours - hours) * 60);
+            
+            const gmtString = `GMT${sign}${hours}${minutes > 0 ? `:${String(minutes).padStart(2, '0')}` : ''}`;
+            
+            return {
+                displayLabel: `${timezone.replace(/_/g, ' ')} (${gmtString})`,
+                compactLabel: gmtString
+            };
         } catch (e) {
-            return { timezoneDisplay: isLocalTime ? 'Local' : timezone, timezoneAbbr: 'N/A' };
+            return { displayLabel: timezone, compactLabel: timezone };
         }
     }, [time, timezone, isLocalTime]);
 
@@ -52,9 +69,9 @@ const Clock: React.FC<ClockProps> = ({ time, timezone, onTimezoneClick, isCompac
                     <span 
                         onClick={onTimezoneClick}
                         className="text-sm font-semibold tracking-wider text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors duration-150 cursor-pointer"
-                        aria-label={`Current timezone: ${timezoneAbbr}. Click to change.`}
+                        aria-label={`Current timezone: ${compactLabel}. Click to change.`}
                     >
-                        {timezoneAbbr}
+                        {compactLabel}
                     </span>
                 )}
 
@@ -89,9 +106,9 @@ const Clock: React.FC<ClockProps> = ({ time, timezone, onTimezoneClick, isCompac
                  <button 
                     onClick={onTimezoneClick}
                     className="inline-block mx-auto rounded-lg text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors px-3 py-1.5 text-sm mt-1 font-mono"
-                    aria-label={`Current timezone: ${timezoneDisplay}. Click to change.`}
+                    aria-label={`Current timezone: ${displayLabel}. Click to change.`}
                 >
-                    {timezoneDisplay} ({timezoneAbbr})
+                    {displayLabel}
                 </button>
             )}
         </div>

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { TIMEZONES } from '../constants';
+import { TIMEZONES, LOCAL_TIMEZONE_DATA } from '../constants';
 import { XMarkIcon, SearchIcon } from './Icons';
 
 interface TimezoneModalProps {
@@ -7,6 +7,12 @@ interface TimezoneModalProps {
     onClose: () => void;
     onSelect: (timezone: string) => void;
     currentTimezone: string;
+}
+
+interface TimezoneOption {
+    value: string;
+    label: string;
+    region: string;
 }
 
 const TimezoneModal: React.FC<TimezoneModalProps> = ({ isOpen, onClose, onSelect, currentTimezone }) => {
@@ -25,26 +31,53 @@ const TimezoneModal: React.FC<TimezoneModalProps> = ({ isOpen, onClose, onSelect
     }, [isOpen, onClose]);
 
     useEffect(() => {
-        // Reset search term when modal opens
         if (isOpen) {
             setSearchTerm('');
         }
     }, [isOpen]);
 
-    const groupedTimezones = useMemo(() => {
-        const filtered = TIMEZONES.filter(tz => 
-            tz.toLowerCase().replace(/_/g, ' ').includes(searchTerm.toLowerCase())
-        );
+    const allTimezones = useMemo(() => {
+        const now = new Date();
+        const utcDate = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
 
-        return filtered.reduce((acc, tz) => {
-            const region = tz.split('/')[0];
-            if (!acc[region]) {
-                acc[region] = [];
+        return TIMEZONES.map(tz => {
+            let label = tz.replace(/_/g, ' ');
+            try {
+                const tzDate = new Date(now.toLocaleString('en-US', { timeZone: tz }));
+                const offsetInHours = (tzDate.getTime() - utcDate.getTime()) / (3600 * 1000);
+                
+                const sign = offsetInHours >= 0 ? '+' : '-';
+                const absHours = Math.abs(offsetInHours);
+                const hours = Math.floor(absHours);
+                const minutes = Math.round((absHours - hours) * 60);
+                
+                const gmtString = `GMT${sign}${hours}${minutes > 0 ? `:${String(minutes).padStart(2, '0')}` : ''}`;
+                label = `${label} (${gmtString})`;
+            } catch (e) {
+                // If timezone is invalid, just use the name
             }
-            acc[region].push(tz);
+            return { value: tz, label, region: tz.split('/')[0] };
+        });
+    }, []);
+
+    const filteredTimezones = useMemo(() => {
+        if (!searchTerm) {
+            return allTimezones;
+        }
+        return allTimezones.filter(tz => 
+            tz.label.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [allTimezones, searchTerm]);
+
+    const groupedTimezones = useMemo(() => {
+        return filteredTimezones.reduce((acc, tz) => {
+            if (!acc[tz.region]) {
+                acc[tz.region] = [];
+            }
+            acc[tz.region].push(tz);
             return acc;
-        }, {} as Record<string, string[]>);
-    }, [searchTerm]);
+        }, {} as Record<string, TimezoneOption[]>);
+    }, [filteredTimezones]);
 
     const handleSelect = (tz: string) => {
         onSelect(tz);
@@ -85,28 +118,44 @@ const TimezoneModal: React.FC<TimezoneModalProps> = ({ isOpen, onClose, onSelect
                 </header>
 
                 <div className="flex-grow overflow-y-auto">
+                    <div className="p-2 border-b border-zinc-200 dark:border-zinc-800">
+                        <button
+                            onClick={() => handleSelect('local')}
+                            className={`w-full text-left px-4 py-3 text-sm transition-colors rounded-md ${
+                                currentTimezone === 'local'
+                                ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold'
+                                : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                            }`}
+                        >
+                            {LOCAL_TIMEZONE_DATA.label}
+                        </button>
+                    </div>
+
                     {Object.keys(groupedTimezones).sort().map(region => (
                         <div key={region}>
                             <h3 className="text-xs font-bold uppercase text-zinc-500 dark:text-zinc-400 bg-zinc-100/50 dark:bg-zinc-800/50 px-4 py-2 sticky top-0 backdrop-blur-sm">{region}</h3>
                             <ul>
                                 {groupedTimezones[region].map(tz => (
-                                    <li key={tz}>
+                                    <li key={tz.value}>
                                         <button 
-                                            onClick={() => handleSelect(tz)}
+                                            onClick={() => handleSelect(tz.value)}
                                             className={`w-full text-left px-4 py-3 text-sm transition-colors ${
-                                                currentTimezone === tz 
+                                                currentTimezone === tz.value 
                                                 ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold' 
                                                 : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                                             }`}
                                         >
-                                            {tz.replace(/_/g, ' ')}
+                                            {tz.label}
                                         </button>
                                     </li>
                                 ))}
                             </ul>
                         </div>
                     ))}
-                    {Object.keys(groupedTimezones).length === 0 && (
+                    {Object.keys(groupedTimezones).length === 0 && !searchTerm && (
+                         <p className="text-center text-zinc-500 dark:text-zinc-400 p-8">Error loading timezones.</p>
+                    )}
+                    {Object.keys(groupedTimezones).length === 0 && searchTerm && (
                         <p className="text-center text-zinc-500 dark:text-zinc-400 p-8">No timezones found.</p>
                     )}
                 </div>

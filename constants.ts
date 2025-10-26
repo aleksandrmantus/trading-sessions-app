@@ -18,6 +18,32 @@ export const SESSION_COLORS = [
     { name: 'Pink', class: 'bg-pink-500' },
 ];
 
+function getLocalTimezoneData() {
+    try {
+        const systemTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const offsetInMinutes = new Date().getTimezoneOffset();
+        const offsetInHours = -offsetInMinutes / 60;
+        
+        const sign = offsetInHours >= 0 ? '+' : '-';
+        const absHours = Math.abs(offsetInHours);
+        const hours = Math.floor(absHours);
+        const minutes = Math.round((absHours - hours) * 60);
+        
+        const gmtString = `GMT${sign}${hours}${minutes > 0 ? `:${String(minutes).padStart(2, '0')}` : ''}`;
+
+        return {
+            value: 'local',
+            label: `${systemTimezone.replace(/_/g, ' ')} (${gmtString})`,
+            gmt: gmtString
+        };
+    } catch (e) {
+        // Fallback for older environments
+        return { value: 'local', label: 'Local System Time', gmt: 'Local' };
+    }
+}
+export const LOCAL_TIMEZONE_DATA = getLocalTimezoneData();
+
+
 export const TIMEZONES: string[] = [
     'America/Chicago',
     'America/Denver',
