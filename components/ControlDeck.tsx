@@ -34,7 +34,7 @@ const MenuRow: React.FC<{ onClick: () => void; icon: React.ReactNode; label: str
 
 const ControlDeck: React.FC<ControlDeckProps> = ({ menuContainerRef, isMenuOpen, onMenuToggle, onCloseMenu, ...props }) => {
   return (
-    <div className="relative z-30 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 p-2 rounded-xl shadow-lg shadow-black/5 dark:shadow-black/20">
+    <div className={`relative ${isMenuOpen ? 'z-50' : 'z-30'} bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 p-2 rounded-xl shadow-lg shadow-black/5 dark:shadow-black/20`}>
       <div className="flex justify-end items-center">
         <div className="relative" ref={menuContainerRef}>
             <button 
