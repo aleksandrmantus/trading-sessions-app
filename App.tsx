@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { TIMEZONES } from './constants';
 import { type TradingSession, type SessionStatus, type SessionDetails } from './types';
@@ -30,7 +29,7 @@ function getSessionStatus(now: Date, openTime: Date, closeTime: Date): { status:
     }
 
     const diffToOpen = openMs - nowMs;
-    if (diffToOpen > 0 && diffToOpen <= 2 * 60 * 60 * 1000) { 
+    if (diffToOpen > 0 && diffToOpen <= 60 * 60 * 1000) { 
          return { status: 'Upcoming', countdown: `Opens in ${formatCountdown(diffToOpen)}` };
     }
 
@@ -184,6 +183,14 @@ const App: React.FC = () => {
     }, [now, selectedTimezone, sessions, tradingSchedule]);
 
     const handleSaveSession = (sessionData: TradingSession | Omit<TradingSession, 'id'>) => {
+        const localDate = new Date(now.toLocaleString('en-US', { timeZone: selectedTimezone }));
+        const dayOfWeek = localDate.getDay();
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+        if (tradingSchedule === 'weekdays' && isWeekend) {
+            setTradingSchedule('24/7');
+        }
+
         if ('id' in sessionData) {
             updateSession(sessionData);
         } else {
@@ -265,7 +272,7 @@ const App: React.FC = () => {
                     )}
 
                     {sessionDetails.length > 0 && (
-                        <div className={`bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl shadow-lg shadow-black/5 dark:shadow-xl dark:shadow-black/20 ${isCompact ? 'p-2' : 'p-4'}`}>
+                        <div className={`bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl shadow-lg shadow-black/5 dark:shadow-xl dark:shadow-black/20 ${isCompact ? 'p-2' : 'p-3'}`}>
                             <Timeline 
                                 sessions={sessions}
                                 sessionDetails={sessionDetails} 
@@ -280,39 +287,48 @@ const App: React.FC = () => {
                         </div>
                     )}
                     
-
                     <div className="space-y-2">
                         {sessionDetails.length > 0 ? (
-                            sessionDetails.map((session, index) => (
-                               <SessionCard
-                                    key={session.id}
-                                    session={session}
-                                    onEdit={() => handleEdit(session)}
-                                    onDelete={() => handleDelete(session.id)}
-                                    isCompact={isCompact}
-                                    showGoldenHours={showGoldenHours}
-                                    style={{ animationDelay: `${index * 50}ms`, opacity: 0 }}
-                               />
-                            ))
+                            <>
+                                {sessionDetails.map((session, index) => (
+                                   <SessionCard
+                                        key={session.id}
+                                        session={session}
+                                        onEdit={() => handleEdit(session)}
+                                        onDelete={() => handleDelete(session.id)}
+                                        isCompact={isCompact}
+                                        showGoldenHours={showGoldenHours}
+                                        style={{ animationDelay: `${index * 50}ms`, opacity: 0 }}
+                                   />
+                                ))}
+                                <div className="flex justify-center pt-2">
+                                    <button 
+                                        onClick={() => setSessionModalState({ isOpen: true, sessionToEdit: null })} 
+                                        className="group flex items-center justify-center gap-x-2 w-auto px-4 py-2 border border-zinc-300/70 dark:border-zinc-700/70 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-all duration-200"
+                                        aria-label="Add Session"
+                                    >
+                                        <PlusIcon className="h-4 w-4" />
+                                        <span className="text-sm">Add Session</span>
+                                    </button>
+                                </div>
+                            </>
                         ) : (
-                            <div className="text-center py-10 px-4 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl shadow-lg shadow-black/5 dark:shadow-xl dark:shadow-black/20">
-                                <h3 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">Markets are currently closed.</h3>
-                                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-                                    Trading sessions are hidden based on your "Weekdays Only" schedule.
+                            <div className="text-center py-12 px-4 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl shadow-lg shadow-black/5 dark:shadow-xl dark:shadow-black/20">
+                                <h3 className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+                                    Markets are Closed
+                                </h3>
+                                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2 max-w-xs mx-auto">
+                                    Your view is filtered to "Weekdays Only".{' '}
+                                    <button 
+                                        onClick={() => setTradingSchedule('24/7')} 
+                                        className="font-medium text-sky-600 dark:text-sky-400 hover:underline focus:outline-none"
+                                    >
+                                        Switch to 24/7 Mode
+                                    </button>
+                                    {' '}to see all sessions.
                                 </p>
                             </div>
                         )}
-                    </div>
-
-                    <div className="flex justify-center pt-2">
-                        <button 
-                            onClick={() => setSessionModalState({ isOpen: true, sessionToEdit: null })} 
-                            className="group flex items-center justify-center gap-x-2 w-auto px-4 py-2 border border-zinc-300/70 dark:border-zinc-700/70 rounded-lg text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-all duration-200"
-                            aria-label="Add Session"
-                        >
-                            <PlusIcon className="h-4 w-4" />
-                            <span className="text-sm">Add Session</span>
-                        </button>
                     </div>
                 </main>
             </div>

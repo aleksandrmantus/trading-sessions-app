@@ -154,7 +154,7 @@ const Timeline: React.FC<TimelineProps> = ({ sessions, sessionDetails, now, time
         );
     }, [goldenHourIntervals, normalizedLocalHour, showGoldenHours]);
 
-    const BAR_HEIGHT = isCompact ? 8 : 12;
+    const BAR_HEIGHT = 8;
     const BAR_GAP = isCompact ? 4 : 8;
     const containerHeight = levelCount * (BAR_HEIGHT + BAR_GAP) - (levelCount > 0 ? BAR_GAP : 0);
 
@@ -165,7 +165,7 @@ const Timeline: React.FC<TimelineProps> = ({ sessions, sessionDetails, now, time
         return (
             <div
                 key={key}
-                className={`absolute rounded-full transition-all duration-300 cursor-pointer group ${isCompact ? 'h-2' : 'h-3'} ${isCurrentlyActiveBar ? 'z-20' : 'z-10'}`}
+                className={`absolute rounded-full transition-all duration-300 cursor-pointer group h-2 ${isCurrentlyActiveBar ? 'z-20' : 'z-10'}`}
                 style={{
                     top: `${session.level * (BAR_HEIGHT + BAR_GAP)}px`,
                     left: `${(interval.start / 24) * 100}%`,
@@ -174,7 +174,7 @@ const Timeline: React.FC<TimelineProps> = ({ sessions, sessionDetails, now, time
                 onMouseMove={(e) => onSetTooltip({ content: session, x: e.clientX, y: e.clientY })}
                 onMouseLeave={() => onSetTooltip(null)}
             >
-                <div className={`absolute inset-0 rounded-full ${session.color} transition-transform duration-300 group-hover:scale-y-125 ${shouldPulse ? 'animate-market-pulse' : ''}`}></div>
+                <div className={`absolute inset-0 rounded-full ${session.color} transition-transform duration-300 group-hover:scale-y-150 ${shouldPulse ? 'animate-market-pulse' : ''}`}></div>
             </div>
         );
     };
@@ -199,14 +199,14 @@ const Timeline: React.FC<TimelineProps> = ({ sessions, sessionDetails, now, time
                 )}
             </div>
 
-            <div className="bg-zinc-100 dark:bg-zinc-950/50 rounded-lg p-2">
+            <div className="bg-zinc-100 dark:bg-zinc-950/50 rounded-md sm:rounded-lg p-2 pt-3">
                 <div className="relative" style={{ height: `${containerHeight}px` }}>
                     {sessionLevels.map((session) => {
                         const intervals = getLocalIntervals(session, utcOffset);
                         return intervals.map((interval, index) => renderSessionBar(session, `${session.id}-${index}`, interval));
                     })}
 
-                    <div className="absolute top-[-8px] -translate-x-1/2 h-[calc(100%+8px)] w-1.5 pointer-events-none z-30" style={{ left: `${markerPosition}%` }}>
+                    <div className="absolute top-[-4px] -translate-x-1/2 h-[calc(100%+8px)] w-1.5 pointer-events-none z-30" style={{ left: `${markerPosition}%` }}>
                         <div className={`h-full w-full rounded-full shadow-lg transition-colors duration-300 bg-zinc-800 dark:bg-zinc-100`}></div>
                         {isCurrentlyGoldenHour && (
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0 h-0 animate-golden-hour-pulse"></div>
