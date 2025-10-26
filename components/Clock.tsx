@@ -37,27 +37,29 @@ const Clock: React.FC<ClockProps> = ({ time, timezone, onTimezoneClick, isCompac
         }).format(time);
     }, [time, timezone]);
 
+    // --- COMPACT MODE: FINAL, MINIMALIST VERSION ---
     if (isCompact) {
         return (
-            <div className="inline-flex items-center gap-2.5">
+            // 1. Return to items-baseline
+            <div className="inline-flex items-baseline gap-2.5">
+                
+                {/* Time */}
                 <h1 className="font-mono text-zinc-900 dark:text-zinc-100 tracking-tight text-2xl font-medium">
                     {timeString}
                 </h1>
                 
-                <button 
-                    onClick={onTimezoneClick}
-                    className="inline-flex items-center h-5 group rounded-md px-1.5 transition-colors duration-150 bg-zinc-200/60 dark:bg-zinc-700/40 hover:bg-zinc-200 dark:hover:bg-zinc-700/70"
-                    style={{ transform: 'translateY(2px)' }}
+                {/* 2. Replace <button> with <span> and remove background */}
+                <span 
+                    onClick={onTimezoneClick} // Clickability is retained on the <span>
+                    className="text-sm font-semibold tracking-wider text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors duration-150 cursor-pointer"
                     aria-label={`Current timezone: ${timezoneAbbr}. Click to change.`}
                 >
-                    <span className="text-xs font-semibold tracking-wider text-zinc-600 dark:text-zinc-400">
-                        {timezoneAbbr}
-                    </span>
-                </button>
+                    {timezoneAbbr}
+                </span>
 
+                {/* 3. Day of the week, styled similarly */}
                 <span 
-                    className="text-xs font-semibold tracking-wider text-zinc-500 dark:text-zinc-400/80"
-                    style={{ transform: 'translateY(2px)' }}
+                    className="text-sm font-semibold tracking-wider text-zinc-400 dark:text-zinc-500"
                 >
                     {dayString}
                 </span>
