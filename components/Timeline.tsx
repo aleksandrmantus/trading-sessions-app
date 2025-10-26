@@ -206,7 +206,7 @@ const Timeline: React.FC<TimelineProps> = ({ sessions, sessionDetails, now, time
                         return intervals.map((interval, index) => renderSessionBar(session, `${session.id}-${index}`, interval));
                     })}
 
-                    <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-[calc(100%+16px)] w-1.5 pointer-events-none z-30" style={{ left: `${markerPosition}%` }}>
+                    <div className="absolute top-[-8px] -translate-x-1/2 h-[calc(100%+8px)] w-1.5 pointer-events-none z-30" style={{ left: `${markerPosition}%` }}>
                         <div className={`h-full w-full rounded-full shadow-lg transition-colors duration-300 bg-zinc-800 dark:bg-zinc-100`}></div>
                         {isCurrentlyGoldenHour && (
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0 h-0 animate-golden-hour-pulse"></div>
