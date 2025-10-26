@@ -72,7 +72,7 @@ const App: React.FC = () => {
     const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('market-sessions-theme', 'dark');
     const [isCompact, setIsCompact] = useLocalStorage<boolean>('market-sessions-compact-mode', false);
     const [now, setNow] = useState(new Date());
-    const [selectedTimezone, setSelectedTimezone] = useLocalStorage<string>('market-sessions-timezone', 'UTC');
+    const [selectedTimezone, setSelectedTimezone] = useLocalStorage<string>('market-sessions-timezone', 'local');
     const { sessions, addSession, updateSession, deleteSession, resetSessions } = useSessions();
     const [sessionModalState, setSessionModalState] = useState<{isOpen: boolean; sessionToEdit: TradingSession | null}>({ isOpen: false, sessionToEdit: null });
     const [timezoneModalOpen, setTimezoneModalOpen] = useState(false);
@@ -80,6 +80,17 @@ const App: React.FC = () => {
     const [showMarketPulse, setShowMarketPulse] = useLocalStorage<boolean>('market-sessions-market-pulse', true);
     const [tooltip, setTooltip] = useState<TooltipData | null>(null);
     const [tradingSchedule, setTradingSchedule] = useLocalStorage<TradingSchedule>('market-sessions-trading-schedule', 'weekdays');
+    
+    const effectiveTimezone = useMemo(() => {
+        if (selectedTimezone === 'local') {
+            try {
+                return Intl.DateTimeFormat().resolvedOptions().timeZone;
+            } catch (e) {
+                return 'UTC'; // Fallback
+            }
+        }
+        return selectedTimezone;
+    }, [selectedTimezone]);
 
 
     useEffect(() => {
@@ -101,7 +112,7 @@ const App: React.FC = () => {
     };
 
     const sessionDetails: SessionDetails[] = useMemo(() => {
-        const localDate = new Date(now.toLocaleString('en-US', { timeZone: selectedTimezone }));
+        const localDate = new Date(now.toLocaleString('en-US', { timeZone: effectiveTimezone }));
         const dayOfWeek = localDate.getDay(); // 0 = Sunday, 6 = Saturday
         const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
@@ -113,7 +124,7 @@ const App: React.FC = () => {
 
         const overlaps = new Array(24 * 60).fill(0);
         sessions.forEach(session => {
-            const intervals = getLocalIntervals(session, now, selectedTimezone);
+            const intervals = getLocalIntervals(session, now, effectiveTimezone);
             intervals.forEach(({ start, end }) => {
                 const startMinute = Math.floor(start * 60);
                 const endMinute = Math.floor(end * 60);
@@ -162,7 +173,7 @@ const App: React.FC = () => {
             const formatter = new Intl.DateTimeFormat('en-US', {
                 hour: '2-digit',
                 minute: '2-digit',
-                timeZone: selectedTimezone,
+                timeZone: effectiveTimezone,
                 hour12: false,
             });
 
@@ -180,17 +191,11 @@ const App: React.FC = () => {
                 isOverlapping: isOverlappingNow,
             };
         });
-    }, [now, selectedTimezone, sessions, tradingSchedule]);
+    }, [now, effectiveTimezone, sessions, tradingSchedule]);
+    
+    const isTimezonePickerVisible = sessionDetails.length > 0;
 
     const handleSaveSession = (sessionData: TradingSession | Omit<TradingSession, 'id'>) => {
-        const localDate = new Date(now.toLocaleString('en-US', { timeZone: selectedTimezone }));
-        const dayOfWeek = localDate.getDay();
-        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-
-        if (tradingSchedule === 'weekdays' && isWeekend) {
-            setTradingSchedule('24/7');
-        }
-
         if ('id' in sessionData) {
             updateSession(sessionData);
         } else {
@@ -228,6 +233,7 @@ const App: React.FC = () => {
                                 timezone={selectedTimezone}
                                 onTimezoneClick={() => setTimezoneModalOpen(true)}
                                 isCompact={true}
+                                isTimezonePickerVisible={isTimezonePickerVisible}
                             />
                             <ControlDeck
                                 theme={theme}
@@ -266,6 +272,7 @@ const App: React.FC = () => {
                                     timezone={selectedTimezone}
                                     onTimezoneClick={() => setTimezoneModalOpen(true)}
                                     isCompact={false}
+                                    isTimezonePickerVisible={isTimezonePickerVisible}
                                 />
                             </div>
                         </>
@@ -277,7 +284,7 @@ const App: React.FC = () => {
                                 sessions={sessions}
                                 sessionDetails={sessionDetails} 
                                 now={now} 
-                                timezone={selectedTimezone} 
+                                timezone={effectiveTimezone} 
                                 isCompact={isCompact}
                                 showGoldenHours={showGoldenHours}
                                 showMarketPulse={showMarketPulse}
@@ -320,7 +327,9 @@ const App: React.FC = () => {
                                 <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2 max-w-xs mx-auto">
                                     Your view is filtered to "Weekdays Only".{' '}
                                     <button 
-                                        onClick={() => setTradingSchedule('24/7')} 
+                                        onClick={() => {
+                                            setTradingSchedule('24/7');
+                                        }} 
                                         className="font-medium text-zinc-800 dark:text-zinc-100 hover:underline focus:outline-none"
                                     >
                                         Switch to 24/7 Mode
