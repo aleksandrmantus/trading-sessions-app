@@ -1,11 +1,11 @@
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { TIMEZONES } from './constants';
 import { type TradingSession, type SessionStatus, type SessionDetails } from './types';
 import SessionCard from './components/SessionCard';
 import Timeline, { type TooltipData } from './components/Timeline';
 import Clock from './components/Clock';
-import { PlusIcon, GitHubIcon, EnvelopeIcon, CheckIcon } from './components/Icons';
+import { PlusIcon, GitHubIcon, EnvelopeIcon } from './components/Icons';
 import { useSessions, useLocalStorage } from './hooks';
 import SessionModal from './components/SessionModal';
 import ControlDeck from './components/ControlDeck';
@@ -79,10 +79,7 @@ const App: React.FC = () => {
     const [timezoneModalOpen, setTimezoneModalOpen] = useState(false);
     const [showGoldenHours, setShowGoldenHours] = useLocalStorage<boolean>('market-sessions-golden-hours', true);
     const [showMarketPulse, setShowMarketPulse] = useLocalStorage<boolean>('market-sessions-market-pulse', true);
-
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [tooltip, setTooltip] = useState<TooltipData | null>(null);
-    const menuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const root = window.document.documentElement;
@@ -97,28 +94,8 @@ const App: React.FC = () => {
         const timer = setInterval(() => setNow(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
-    
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-                setIsMenuOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const handleMenuToggle = () => {
-        if (!isMenuOpen) {
-            setTooltip(null); // Close tooltip when opening menu
-        }
-        setIsMenuOpen(prev => !prev);
-    };
 
     const handleSetTooltip = (data: TooltipData | null) => {
-        if (data) {
-            setIsMenuOpen(false); // Close menu when showing tooltip
-        }
         setTooltip(data);
     };
 
@@ -145,20 +122,17 @@ const App: React.FC = () => {
                     ? session.utcEndHour - session.utcStartHour
                     : (24 - session.utcStartHour) + session.utcEndHour;
 
-                // First, let's establish today's session window
                 let open = new Date(now);
                 open.setUTCHours(session.utcStartHour, 0, 0, 0);
                 let close = new Date(open);
                 close.setUTCHours(close.getUTCHours() + durationHours);
 
-                // If 'now' is already past today's closing time, the next session is tomorrow.
                 if (now.getTime() >= close.getTime()) {
                     open.setDate(open.getDate() + 1);
                     close.setDate(close.getDate() + 1);
                     return { open, close };
                 }
                 
-                // If 'now' is before today's opening time, the active session might have started yesterday.
                 if (now.getTime() < open.getTime()) {
                     const openYesterday = new Date(open);
                     openYesterday.setDate(openYesterday.getDate() - 1);
@@ -166,13 +140,11 @@ const App: React.FC = () => {
                     const closeForYesterdayOpen = new Date(openYesterday);
                     closeForYesterdayOpen.setUTCHours(closeForYesterdayOpen.getUTCHours() + durationHours);
 
-                    // If 'now' is within the session that started yesterday, we found our active session.
                     if (now.getTime() >= openYesterday.getTime() && now.getTime() < closeForYesterdayOpen.getTime()) {
                         return { open: openYesterday, close: closeForYesterdayOpen };
                     }
                 }
 
-                // Otherwise, the relevant session is the one that opens/opened today.
                 return { open, close };
             };
             
@@ -210,6 +182,12 @@ const App: React.FC = () => {
         }
         setSessionModalState({ isOpen: false, sessionToEdit: null });
     };
+    
+    const handleResetSessions = () => {
+        if (window.confirm('Are you sure you want to reset all sessions to their defaults? This cannot be undone.')) {
+            resetSessions();
+        }
+    };
 
     const handleEdit = (session: TradingSession) => {
         setSessionModalState({ isOpen: true, sessionToEdit: session });
@@ -225,34 +203,53 @@ const App: React.FC = () => {
         <div className={`min-h-screen grid grid-rows-[1fr_auto] text-zinc-800 dark:text-zinc-200 font-sans ${isCompact ? 'compact' : ''}`}>
             <div className="max-w-xl mx-auto w-full p-4 sm:p-6 lg:p-8">
                 <main className="space-y-3">
-                    <ControlDeck
-                        theme={theme}
-                        onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                        isCompact={isCompact}
-                        onCompactToggle={() => setIsCompact(!isCompact)}
-                        onResetSessions={() => {
-                            if (window.confirm('Are you sure you want to reset all sessions to their defaults? This cannot be undone.')) {
-                                resetSessions();
-                            }
-                        }}
-                        showGoldenHours={showGoldenHours}
-                        onGoldenHoursToggle={() => setShowGoldenHours(!showGoldenHours)}
-                        showMarketPulse={showMarketPulse}
-                        onMarketPulseToggle={() => setShowMarketPulse(!showMarketPulse)}
-                        isMenuOpen={isMenuOpen}
-                        onMenuToggle={handleMenuToggle}
-                        onCloseMenu={() => setIsMenuOpen(false)}
-                        menuContainerRef={menuRef}
-                    />
-                    
-                    <div className="bg-white dark:bg-zinc-900 shadow-md dark:shadow-lg shadow-black/5 dark:shadow-black/20 rounded-xl p-6 transition-colors border border-zinc-200/80 dark:border-zinc-800">
-                        <Clock 
-                          time={now} 
-                          timezone={selectedTimezone} 
-                          onTimezoneClick={() => setTimezoneModalOpen(true)}
-                          isCompact={isCompact}
-                        />
-                    </div>
+                    {isCompact ? (
+                        // --- COMPACT MODE ---
+                        // A single "Smart Status Bar" that combines Clock and Controls
+                        <div className="grid grid-cols-[1fr_auto] items-center gap-4 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl shadow-lg shadow-black/5 dark:shadow-xl dark:shadow-black/20 p-2 px-4 transition-all duration-300">
+                            <Clock
+                                time={now}
+                                timezone={selectedTimezone}
+                                onTimezoneClick={() => setTimezoneModalOpen(true)}
+                                isCompact={true}
+                            />
+                            <ControlDeck
+                                theme={theme}
+                                onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                                isCompact={isCompact}
+                                onCompactToggle={() => setIsCompact(!isCompact)}
+                                onResetSessions={handleResetSessions}
+                                showGoldenHours={showGoldenHours}
+                                onGoldenHoursToggle={() => setShowGoldenHours(!showGoldenHours)}
+                                showMarketPulse={showMarketPulse}
+                                onMarketPulseToggle={() => setShowMarketPulse(!showMarketPulse)}
+                            />
+                        </div>
+                    ) : (
+                        // --- NORMAL MODE ---
+                        // Two separate blocks for controls and clock
+                        <>
+                            <ControlDeck
+                                theme={theme}
+                                onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                                isCompact={isCompact}
+                                onCompactToggle={() => setIsCompact(!isCompact)}
+                                onResetSessions={handleResetSessions}
+                                showGoldenHours={showGoldenHours}
+                                onGoldenHoursToggle={() => setShowGoldenHours(!showGoldenHours)}
+                                showMarketPulse={showMarketPulse}
+                                onMarketPulseToggle={() => setShowMarketPulse(!showMarketPulse)}
+                            />
+                            <div className="bg-white dark:bg-zinc-900 shadow-md dark:shadow-lg shadow-black/5 dark:shadow-black/20 rounded-xl p-6 transition-colors border border-zinc-200/80 dark:border-zinc-800">
+                                <Clock
+                                    time={now}
+                                    timezone={selectedTimezone}
+                                    onTimezoneClick={() => setTimezoneModalOpen(true)}
+                                    isCompact={false}
+                                />
+                            </div>
+                        </>
+                    )}
 
                     <div className={`bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl shadow-lg shadow-black/5 dark:shadow-xl dark:shadow-black/20 ${isCompact ? 'p-3' : 'p-4 sm:p-6'}`}>
                         <Timeline 
