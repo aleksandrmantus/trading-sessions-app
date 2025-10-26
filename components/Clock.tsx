@@ -102,7 +102,7 @@ const Clock: React.FC<ClockProps> = ({ time, timezone, onTimezoneClick, isCompac
             {/* 3. Timezone button (only clickable part) */}
             <button 
                 onClick={onTimezoneClick}
-                className="w-full max-w-xs mx-auto rounded-lg text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors py-1.5 text-sm mt-1 font-mono"
+                className="inline-block mx-auto rounded-lg text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors px-3 py-1.5 text-sm mt-1 font-mono"
                 aria-label={`Current timezone: ${timezoneDisplay}. Click to change.`}
             >
                 {timezoneDisplay} ({timezoneAbbr})

@@ -321,7 +321,7 @@ const App: React.FC = () => {
                                     Your view is filtered to "Weekdays Only".{' '}
                                     <button 
                                         onClick={() => setTradingSchedule('24/7')} 
-                                        className="font-medium text-sky-600 dark:text-sky-400 hover:underline focus:outline-none"
+                                        className="font-medium text-zinc-800 dark:text-zinc-100 hover:underline focus:outline-none"
                                     >
                                         Switch to 24/7 Mode
                                     </button>
