@@ -90,6 +90,7 @@ const App: React.FC = () => {
     const [showMarketPulse, setShowMarketPulse] = useLocalStorage<boolean>('market-sessions-market-pulse', true);
     const [tooltip, setTooltip] = useState<TooltipData | null>(null);
     const [tradingSchedule, setTradingSchedule] = useLocalStorage<TradingSchedule>('market-sessions-trading-schedule', 'weekdays');
+    const [focusedSessionId, setFocusedSessionId] = useState<string | null>(null);
     
     const effectiveTimezone = useMemo(() => {
         if (selectedTimezone === 'local') {
@@ -119,6 +120,10 @@ const App: React.FC = () => {
 
     const handleSetTooltip = (data: TooltipData | null) => {
         setTooltip(data);
+    };
+    
+    const handleSessionFocusToggle = (sessionId: string) => {
+        setFocusedSessionId(prevId => (prevId === sessionId ? null : sessionId));
     };
 
     const sessionDetails: SessionDetails[] = useMemo(() => {
@@ -231,7 +236,14 @@ const App: React.FC = () => {
     };
     
     return (
-        <div className={`min-h-screen grid grid-rows-[1fr_auto] text-zinc-800 dark:text-zinc-200 font-sans ${isCompact ? 'compact' : ''}`}>
+        <div 
+            className={`min-h-screen grid grid-rows-[1fr_auto] text-zinc-800 dark:text-zinc-200 font-sans ${isCompact ? 'compact' : ''}`}
+            onClick={(e) => {
+                if (!(e.target as HTMLElement).closest('.session-card, .timeline-bar, .control-deck-menu')) {
+                    setFocusedSessionId(null);
+                }
+            }}
+        >
             <div className="max-w-xl mx-auto w-full p-4 sm:p-6 lg:p-8">
                 <main className="space-y-3">
                     {isCompact ? (
@@ -300,6 +312,8 @@ const App: React.FC = () => {
                                 showMarketPulse={showMarketPulse}
                                 tooltip={tooltip}
                                 onSetTooltip={handleSetTooltip}
+                                focusedSessionId={focusedSessionId}
+                                onSessionBarClick={handleSessionFocusToggle}
                             />
                         </div>
                     )}
@@ -316,6 +330,9 @@ const App: React.FC = () => {
                                         isCompact={isCompact}
                                         showGoldenHours={showGoldenHours}
                                         style={{ animationDelay: `${index * 50}ms`, opacity: 0 }}
+                                        isFocused={focusedSessionId === session.id}
+                                        isDimmed={focusedSessionId !== null && focusedSessionId !== session.id}
+                                        onFocusToggle={() => handleSessionFocusToggle(session.id)}
                                    />
                                 ))}
                                 <div className="flex justify-center pt-2">

@@ -18,6 +18,8 @@ interface TimelineProps {
     showMarketPulse: boolean;
     tooltip: TooltipData | null;
     onSetTooltip: (data: TooltipData | null) => void;
+    focusedSessionId: string | null;
+    onSessionBarClick: (sessionId: string) => void;
 }
 
 const getLocalIntervals = (session: TradingSession, offset: number): { start: number; end: number }[] => {
@@ -52,7 +54,7 @@ const statusStyles: Record<SessionDetails['status'], { text: string }> = {
     'closed': { text: 'text-zinc-500 dark:text-zinc-400' },
 };
 
-const Timeline: React.FC<TimelineProps> = ({ sessions, sessionDetails, now, timezone, isCompact, showGoldenHours, showMarketPulse, tooltip, onSetTooltip }) => {
+const Timeline: React.FC<TimelineProps> = ({ sessions, sessionDetails, now, timezone, isCompact, showGoldenHours, showMarketPulse, tooltip, onSetTooltip, focusedSessionId, onSessionBarClick }) => {
     const tooltipRef = useRef<HTMLDivElement>(null);
     const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({ opacity: 0, transition: 'opacity 0.2s, transform 0.2s' });
 
@@ -169,20 +171,29 @@ const Timeline: React.FC<TimelineProps> = ({ sessions, sessionDetails, now, time
     const renderSessionBar = (session: SessionDetails & { level: number }, key: string, interval: { start: number, end: number }) => {
         const isCurrentlyActiveBar = normalizedLocalHour >= interval.start && normalizedLocalHour < interval.end;
         const shouldPulse = isCurrentlyActiveBar && showMarketPulse;
+        const isInFocus = session.id === focusedSessionId;
+        const isDimmed = focusedSessionId !== null && !isInFocus;
 
         return (
             <div
                 key={key}
-                className={`absolute rounded-full transition-all duration-300 cursor-pointer group h-2 ${isCurrentlyActiveBar ? 'z-20' : 'z-10'}`}
+                className={`timeline-bar absolute rounded-full transition-all duration-300 ease-out cursor-pointer group h-2 ${isDimmed ? 'opacity-30' : 'opacity-100'}`}
                 style={{
                     top: `${session.level * (BAR_HEIGHT + BAR_GAP)}px`,
                     left: `${(interval.start / 24) * 100}%`,
+                    // FIX: Changed `start` to `interval.start` to correctly calculate the width.
                     width: `${((interval.end - interval.start) / 24) * 100}%`,
+                    transform: isInFocus ? 'scaleY(1.5)' : 'scaleY(1)',
+                    zIndex: isInFocus ? 25 : (isCurrentlyActiveBar ? 20 : 10),
+                }}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onSessionBarClick(session.id);
                 }}
                 onMouseMove={(e) => onSetTooltip({ content: session, x: e.clientX, y: e.clientY })}
                 onMouseLeave={() => onSetTooltip(null)}
             >
-                <div className={`absolute inset-0 rounded-full ${session.color} transition-transform duration-300 group-hover:scale-y-150 ${shouldPulse ? 'animate-market-pulse' : ''}`}></div>
+                <div className={`absolute inset-0 rounded-full ${session.color} transition-transform duration-300 ${shouldPulse ? 'animate-market-pulse' : ''}`}></div>
             </div>
         );
     };
