@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState, useRef, useLayoutEffect } from 'react';
 import { type TradingSession, type SessionDetails } from '../types';
 
@@ -146,6 +145,13 @@ const Timeline: React.FC<TimelineProps> = ({ sessions, sessionDetails, now, time
         }
         return overlaps;
     }, [sessionDetails, utcOffset, showGoldenHours]);
+    
+    const isCurrentlyGoldenHour = useMemo(() => {
+        if (!showGoldenHours) return false;
+        return goldenHourIntervals.some(interval => 
+            normalizedLocalHour >= interval.start && normalizedLocalHour < interval.end
+        );
+    }, [goldenHourIntervals, normalizedLocalHour, showGoldenHours]);
 
     const BAR_HEIGHT = isCompact ? 8 : 12;
     const BAR_GAP = isCompact ? 4 : 8;
@@ -194,22 +200,16 @@ const Timeline: React.FC<TimelineProps> = ({ sessions, sessionDetails, now, time
 
             <div className="bg-zinc-100 dark:bg-zinc-950/50 rounded-lg p-4">
                 <div className="relative" style={{ height: `${containerHeight}px` }}>
-                    {goldenHourIntervals.map((interval, index) => (
-                        <div key={`golden-${index}`} className="absolute top-0 h-full rounded-md pointer-events-none z-0" style={{
-                            left: `${(interval.start / 24) * 100}%`,
-                            width: `${((interval.end - interval.start) / 24) * 100}%`,
-                            background: 'rgba(234, 179, 8, 0.4)',
-                            filter: 'blur(22px)',
-                        }}></div>
-                    ))}
-
                     {sessionLevels.map((session) => {
                         const intervals = getLocalIntervals(session, utcOffset);
                         return intervals.map((interval, index) => renderSessionBar(session, `${session.id}-${index}`, interval));
                     })}
-                     
-                    <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-[calc(100%+16px)] w-1.5 pointer-events-none z-20" style={{ left: `${markerPosition}%` }}>
-                        <div className="h-full w-full bg-zinc-800 dark:bg-zinc-100 rounded-full shadow-lg"></div>
+
+                    <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-[calc(100%+16px)] w-1.5 pointer-events-none z-30" style={{ left: `${markerPosition}%` }}>
+                        <div className={`h-full w-full rounded-full shadow-lg transition-colors duration-300 bg-zinc-800 dark:bg-zinc-100`}></div>
+                        {isCurrentlyGoldenHour && (
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0 h-0 animate-golden-hour-pulse"></div>
+                        )}
                     </div>
                 </div>
 

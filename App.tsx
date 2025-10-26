@@ -140,24 +140,43 @@ const App: React.FC = () => {
         });
 
         return sessions.map((session: TradingSession) => {
-            const findNextSession = (startOffset: number): {open: Date, close: Date} => {
-                const open = new Date(now);
-                open.setUTCHours(session.utcStartHour, 0, 0, 0);
-                open.setUTCDate(open.getUTCDate() + startOffset);
-                
-                const close = new Date(open);
+            const findCurrentOrNextSession = (now: Date, session: TradingSession): {open: Date, close: Date} => {
                 const durationHours = session.utcEndHour >= session.utcStartHour
                     ? session.utcEndHour - session.utcStartHour
                     : (24 - session.utcStartHour) + session.utcEndHour;
+
+                // First, let's establish today's session window
+                let open = new Date(now);
+                open.setUTCHours(session.utcStartHour, 0, 0, 0);
+                let close = new Date(open);
                 close.setUTCHours(close.getUTCHours() + durationHours);
 
-                if (close.getTime() < now.getTime()) {
-                    return findNextSession(startOffset + 1);
+                // If 'now' is already past today's closing time, the next session is tomorrow.
+                if (now.getTime() >= close.getTime()) {
+                    open.setDate(open.getDate() + 1);
+                    close.setDate(close.getDate() + 1);
+                    return { open, close };
                 }
+                
+                // If 'now' is before today's opening time, the active session might have started yesterday.
+                if (now.getTime() < open.getTime()) {
+                    const openYesterday = new Date(open);
+                    openYesterday.setDate(openYesterday.getDate() - 1);
+                    
+                    const closeForYesterdayOpen = new Date(openYesterday);
+                    closeForYesterdayOpen.setUTCHours(closeForYesterdayOpen.getUTCHours() + durationHours);
+
+                    // If 'now' is within the session that started yesterday, we found our active session.
+                    if (now.getTime() >= openYesterday.getTime() && now.getTime() < closeForYesterdayOpen.getTime()) {
+                        return { open: openYesterday, close: closeForYesterdayOpen };
+                    }
+                }
+
+                // Otherwise, the relevant session is the one that opens/opened today.
                 return { open, close };
             };
             
-            const { open, close } = findNextSession(0);
+            const { open, close } = findCurrentOrNextSession(now, session);
             const { status, countdown } = getSessionStatus(now, open, close);
 
             const formatter = new Intl.DateTimeFormat('en-US', {
