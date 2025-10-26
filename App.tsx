@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { TIMEZONES } from './constants';
 import { type TradingSession, type SessionStatus, type SessionDetails } from './types';
@@ -404,6 +405,8 @@ const App: React.FC = () => {
                 onSave={handleSaveSession}
                 session={sessionModalState.sessionToEdit}
                 sessions={sessions}
+                // FIX: Pass the effectiveTimezone to the SessionModal
+                localTimezone={effectiveTimezone}
             />
             <TimezoneModal
                 isOpen={timezoneModalOpen}
