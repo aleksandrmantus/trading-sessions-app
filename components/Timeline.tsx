@@ -1,4 +1,5 @@
 
+
 import React, { useMemo, useState, useRef, useLayoutEffect } from 'react';
 import { type TradingSession, type SessionDetails } from '../types';
 
@@ -40,10 +41,15 @@ const doIntervalsOverlap = (i1: { start: number; end: number }, i2: { start: num
     return Math.max(i1.start, i2.start) < Math.min(i1.end, i2.end);
 };
 
+// FIX: The keys of this object should match the `SessionStatus` type.
+// I've updated the keys to be lowercase and added the missing statuses for completeness.
+// I've also aligned the text colors with SessionCard.tsx for consistency.
 const statusStyles: Record<SessionDetails['status'], { text: string }> = {
-    Active: { text: 'text-green-600 dark:text-green-300' },
-    Upcoming: { text: 'text-yellow-600 dark:text-yellow-300' },
-    Closed: { text: 'text-zinc-500 dark:text-zinc-400' },
+    'active': { text: 'text-emerald-600 dark:text-emerald-300' },
+    'active-closing': { text: 'text-orange-600 dark:text-orange-400' },
+    'upcoming': { text: 'text-yellow-600 dark:text-yellow-300' },
+    'upcoming-soon': { text: 'text-amber-600 dark:text-amber-400' },
+    'closed': { text: 'text-zinc-500 dark:text-zinc-400' },
 };
 
 const Timeline: React.FC<TimelineProps> = ({ sessions, sessionDetails, now, timezone, isCompact, showGoldenHours, showMarketPulse, tooltip, onSetTooltip }) => {
@@ -115,7 +121,9 @@ const Timeline: React.FC<TimelineProps> = ({ sessions, sessionDetails, now, time
 
     const goldenHourIntervals = useMemo(() => {
         if (!showGoldenHours) return [];
-        const activeSessions = sessionDetails.filter(s => s.status === 'Active');
+        // FIX: Corrected the filter to check for statuses that start with 'active'
+        // to correctly include both 'active' and 'active-closing' sessions.
+        const activeSessions = sessionDetails.filter(s => s.status.startsWith('active'));
         const resolution = 24 * 60;
         const activeCounts = new Array(resolution).fill(0);
         activeSessions.forEach(session => {

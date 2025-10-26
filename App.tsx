@@ -23,18 +23,28 @@ function getSessionStatus(now: Date, openTime: Date, closeTime: Date): { status:
     const openMs = openTime.getTime();
     const closeMs = closeTime.getTime();
 
+    const MIN_15_IN_MS = 15 * 60 * 1000;
+    const MIN_30_IN_MS = 30 * 60 * 1000;
+    const MIN_60_IN_MS = 60 * 60 * 1000;
+
     if (nowMs >= openMs && nowMs < closeMs) {
         const diff = closeMs - nowMs;
-        return { status: 'Active', countdown: `Closes in ${formatCountdown(diff)}` };
+        if (diff <= MIN_30_IN_MS) {
+            return { status: 'active-closing', countdown: `Closes in ${formatCountdown(diff)}` };
+        }
+        return { status: 'active', countdown: `Closes in ${formatCountdown(diff)}` };
     }
 
     const diffToOpen = openMs - nowMs;
-    if (diffToOpen > 0 && diffToOpen <= 60 * 60 * 1000) { 
-         return { status: 'Upcoming', countdown: `Opens in ${formatCountdown(diffToOpen)}` };
+    if (diffToOpen > 0 && diffToOpen <= MIN_60_IN_MS) {
+        if (diffToOpen <= MIN_15_IN_MS) {
+            return { status: 'upcoming-soon', countdown: `Opens in ${formatCountdown(diffToOpen)}` };
+        }
+        return { status: 'upcoming', countdown: `Opens in ${formatCountdown(diffToOpen)}` };
     }
 
     const nextOpenDiff = diffToOpen > 0 ? diffToOpen : diffToOpen + 24 * 60 * 60 * 1000;
-    return { status: 'Closed', countdown: `Opens in ${formatCountdown(nextOpenDiff)}` };
+    return { status: 'closed', countdown: `Opens in ${formatCountdown(nextOpenDiff)}` };
 }
 
 const getLocalIntervals = (session: TradingSession, now: Date, timezone: string): { start: number; end: number }[] => {
@@ -178,7 +188,7 @@ const App: React.FC = () => {
             });
 
             let isOverlappingNow = false;
-            if (status === 'Active') {
+            if (status === 'active' || status === 'active-closing') {
                 isOverlappingNow = overlaps[nowInMinutes] > 1;
             }
 

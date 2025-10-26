@@ -8,7 +8,7 @@ export interface TradingSession {
     color: string;
 }
 
-export type SessionStatus = 'Active' | 'Upcoming' | 'Closed';
+export type SessionStatus = 'active' | 'active-closing' | 'upcoming' | 'upcoming-soon' | 'closed';
 
 export interface SessionDetails extends TradingSession {
     status: SessionStatus;
