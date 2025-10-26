@@ -39,7 +39,7 @@ const Clock: React.FC<ClockProps> = ({ time, timezone, onTimezoneClick, isCompac
 
     if (isCompact) {
         return (
-            <div className="inline-flex items-baseline gap-2.5 rounded-lg p-1.5 -ml-1.5">
+            <div className="inline-flex items-center gap-2.5">
                 <h1 className="font-mono text-zinc-900 dark:text-zinc-100 tracking-tight text-2xl font-medium">
                     {timeString}
                 </h1>
@@ -47,7 +47,7 @@ const Clock: React.FC<ClockProps> = ({ time, timezone, onTimezoneClick, isCompac
                 <button 
                     onClick={onTimezoneClick}
                     className="inline-flex items-center h-5 group rounded-md px-1.5 transition-colors duration-150 bg-zinc-200/60 dark:bg-zinc-700/40 hover:bg-zinc-200 dark:hover:bg-zinc-700/70"
-                    style={{ transform: 'translateY(-1px)' }}
+                    style={{ transform: 'translateY(2px)' }}
                     aria-label={`Current timezone: ${timezoneAbbr}. Click to change.`}
                 >
                     <span className="text-xs font-semibold tracking-wider text-zinc-600 dark:text-zinc-400">
@@ -57,7 +57,7 @@ const Clock: React.FC<ClockProps> = ({ time, timezone, onTimezoneClick, isCompac
 
                 <span 
                     className="text-xs font-semibold tracking-wider text-zinc-500 dark:text-zinc-400/80"
-                    style={{ transform: 'translateY(-1px)' }}
+                    style={{ transform: 'translateY(2px)' }}
                 >
                     {dayString}
                 </span>
