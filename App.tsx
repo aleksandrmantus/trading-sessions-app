@@ -389,7 +389,7 @@ const App: React.FC = () => {
                             <GitHubIcon className="w-5 h-5" />
                         </a>
                         <a 
-                            href="mailto:aleksandrmantus@gmail.com" 
+                            href="mailto:aleksandr@mantus.ru" 
                             aria-label="Send Email" 
                             className="transition-all text-zinc-400 dark:text-zinc-500 hover:text-zinc-800 dark:hover:text-white hover:scale-110"
                         >
